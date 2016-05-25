@@ -63,7 +63,26 @@ const track = {
 }
 
 searchYoutube(api_key, log, track);
+
+// Before
 //
+// [ 'Chillwave: The Lighthouse and The Whaler - Venice (Adam Snow bootleg) [Free Download]',
+//   'The Lighthouse and The Whaler - Venice (Adam Snow bootleg)',
+//   'The Lighthouse and The Whaler - Venice (Adam Snow bootleg)',
+//   'The Lighthouse & The Whaler - Venice (Adam Snow Remix)',
+//   'The Lighthouse and The Whaler - Venice (Adam Snow Bootleg)' ]
+// [ 24, 0, 0, 10, 0 ]
+//
+// After
+//
+// [ 'The Lighthouse and The Whaler - Venice (Adam Snow bootleg)',
+//   'The Lighthouse and The Whaler - Venice (Adam Snow bootleg)',
+//   'The Lighthouse and The Whaler - Venice (Adam Snow Bootleg)',
+//   'The Lighthouse & The Whaler - Venice (Adam Snow Remix)',
+//   'Chillwave: The Lighthouse and The Whaler - Venice (Adam Snow bootleg) [Free Download]' ]
+// [ 0, 0, 0, 10, 24 ]
+
+// sample raw result from youtube api.
 // {
 //   "kind": "youtube#searchListResponse",
 //   "etag": "\"zekp1FB4kTkkM-rWc1qIAAt-BWc/-TNFC5R_8ceecS8vSMUDJRykR4Q\"",
