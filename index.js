@@ -27,42 +27,47 @@ const sanitize = (str) => {
 };
 
 const mergeBestMatch = R.curry((track, secondaryCallback, err, result) => {
+  if (err) {
+    console.error(`youtuber error - ${track.title} : ${JSON.stringify(err, null, 1)}`);
+    secondaryCallback(track);
+  }
+  else if (result) {
+    let { title: q_title, artist: q_artist } = track;
 
-  let { title: q_title, artist: q_artist } = track;
+    const getItems = R.path(['items']);
+    const getTitles = R.map(R.path(['snippet', 'title']));
+    const getVideoId = R.path(['id', 'videoId']);
+    const getThumbs = R.path(['snippet', 'thumbnails']);
 
-  const getItems = R.path(['items']);
-  const getTitles = R.map(R.path(['snippet', 'title']));
-  const getVideoId = R.path(['id', 'videoId']);
-  const getThumbs = R.path(['snippet', 'thumbnails']);
-
-  const getDistance = (title) => {
-    q_title = sanitize(q_title);
-    q_artist = sanitize(q_artist);
-    title = sanitize(title);
-    const d1 = levenshtein.get(`${q_title} ${q_artist}`, title);
-    const d2 = levenshtein.get(`${q_artist} ${q_title}`, title);
-    return d1 > d2 ? d2 : d1;
-  };
-
-  const distances = R.map(getDistance, getTitles(getItems(result)));
-
-  const addDistanceToItem = (distance, item) => {
-    return {
-      ...item,
-      levenshtein_distance: distance
+    const getDistance = (title) => {
+      q_title = sanitize(q_title);
+      q_artist = sanitize(q_artist);
+      title = sanitize(title);
+      const d1 = levenshtein.get(`${q_title} ${q_artist}`, title);
+      const d2 = levenshtein.get(`${q_artist} ${q_title}`, title);
+      return d1 > d2 ? d2 : d1;
     };
-  };
 
-  const zippedItems = R.zipWith(addDistanceToItem, distances, getItems(result));
-  const sortedItems = R.sortBy(R.prop("levenshtein_distance"), zippedItems);
+    const distances = R.map(getDistance, getTitles(getItems(result)));
 
-  const youtubedTrack = {
-    ...track,
-    youtube_images: getThumbs(R.head(sortedItems)),
-    youtube_link: `https://www.youtube.com/watch?v=${getVideoId(R.head(sortedItems))}`
-  };
+    const addDistanceToItem = (distance, item) => {
+      return {
+        ...item,
+        levenshtein_distance: distance
+      };
+    };
 
-  secondaryCallback(youtubedTrack);
+    const zippedItems = R.zipWith(addDistanceToItem, distances, getItems(result));
+    const sortedItems = R.sortBy(R.prop("levenshtein_distance"), zippedItems);
+
+    const youtubedTrack = {
+      ...track,
+      youtube_images: getThumbs(R.head(sortedItems)),
+      youtube_link: `https://www.youtube.com/watch?v=${getVideoId(R.head(sortedItems))}`
+    };
+
+    secondaryCallback(youtubedTrack);
+  }
 
   // //Before
   // console.log("Before\n");
