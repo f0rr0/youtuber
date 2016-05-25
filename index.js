@@ -28,8 +28,7 @@ const sanitize = (str) => {
 
 const mergeBestMatch = R.curry((track, secondaryCallback, err, result) => {
   if (err) {
-    console.error(`youtuber error - ${track.title} : ${JSON.stringify(err, null, 1)}`);
-    secondaryCallback(track);
+    secondaryCallback(err, track);
   }
   else if (result) {
     let { title: q_title, artist: q_artist } = track;
@@ -66,7 +65,7 @@ const mergeBestMatch = R.curry((track, secondaryCallback, err, result) => {
       youtube_link: `https://www.youtube.com/watch?v=${getVideoId(R.head(sortedItems))}`
     };
 
-    secondaryCallback(youtubedTrack);
+    secondaryCallback(null, youtubedTrack);
   }
 
   // //Before
