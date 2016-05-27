@@ -50,41 +50,47 @@ var sanitize = function sanitize(str) {
 };
 
 var mergeBestMatch = _ramda2.default.curry(function (track, secondaryCallback, err, result) {
-  var q_title = track.title;
-  var q_artist = track.artist;
+  if (err) {
+    secondaryCallback(err, track);
+  } else if (result) {
+    (function () {
+      var q_title = track.title;
+      var q_artist = track.artist;
 
 
-  var getItems = _ramda2.default.path(['items']);
-  var getTitles = _ramda2.default.map(_ramda2.default.path(['snippet', 'title']));
-  var getVideoId = _ramda2.default.path(['id', 'videoId']);
-  var getThumbs = _ramda2.default.path(['snippet', 'thumbnails']);
+      var getItems = _ramda2.default.pathOr(null, ['items']);
+      var getTitles = _ramda2.default.map(_ramda2.default.pathOr(null, ['snippet', 'title']));
+      var getVideoId = _ramda2.default.pathOr(null, ['id', 'videoId']);
+      var getThumbs = _ramda2.default.pathOr(null, ['snippet', 'thumbnails']);
 
-  var getDistance = function getDistance(title) {
-    q_title = sanitize(q_title);
-    q_artist = sanitize(q_artist);
-    title = sanitize(title);
-    var d1 = _fastLevenshtein2.default.get(q_title + ' ' + q_artist, title);
-    var d2 = _fastLevenshtein2.default.get(q_artist + ' ' + q_title, title);
-    return d1 > d2 ? d2 : d1;
-  };
+      var getDistance = function getDistance(title) {
+        q_title = sanitize(q_title);
+        q_artist = sanitize(q_artist);
+        title = sanitize(title);
+        var d1 = _fastLevenshtein2.default.get(q_title + ' ' + q_artist, title);
+        var d2 = _fastLevenshtein2.default.get(q_artist + ' ' + q_title, title);
+        return d1 > d2 ? d2 : d1;
+      };
+      console.log(getTitles(getItems(result)));
+      var distances = _ramda2.default.map(getDistance, getTitles(getItems(result)));
 
-  var distances = _ramda2.default.map(getDistance, getTitles(getItems(result)));
+      var addDistanceToItem = function addDistanceToItem(distance, item) {
+        return _extends({}, item, {
+          levenshtein_distance: distance
+        });
+      };
 
-  var addDistanceToItem = function addDistanceToItem(distance, item) {
-    return _extends({}, item, {
-      levenshtein_distance: distance
-    });
-  };
+      var zippedItems = _ramda2.default.zipWith(addDistanceToItem, distances, getItems(result));
+      var sortedItems = _ramda2.default.sortBy(_ramda2.default.prop("levenshtein_distance"), zippedItems);
 
-  var zippedItems = _ramda2.default.zipWith(addDistanceToItem, distances, getItems(result));
-  var sortedItems = _ramda2.default.sortBy(_ramda2.default.prop("levenshtein_distance"), zippedItems);
+      var youtubedTrack = _extends({}, track, {
+        youtube_images: getThumbs(_ramda2.default.head(sortedItems)),
+        youtube_link: 'https://www.youtube.com/watch?v=' + getVideoId(_ramda2.default.head(sortedItems))
+      });
 
-  var youtubedTrack = _extends({}, track, {
-    youtube_images: getThumbs(_ramda2.default.head(sortedItems)),
-    youtube_link: 'https://www.youtube.com/watch?v=' + getVideoId(_ramda2.default.head(sortedItems))
-  });
-
-  secondaryCallback(youtubedTrack);
+      secondaryCallback(null, youtubedTrack);
+    })();
+  }
 
   // //Before
   // console.log("Before\n");

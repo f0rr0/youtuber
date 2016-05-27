@@ -33,10 +33,10 @@ const mergeBestMatch = R.curry((track, secondaryCallback, err, result) => {
   else if (result) {
     let { title: q_title, artist: q_artist } = track;
 
-    const getItems = R.path(['items']);
-    const getTitles = R.map(R.path(['snippet', 'title']));
-    const getVideoId = R.path(['id', 'videoId']);
-    const getThumbs = R.path(['snippet', 'thumbnails']);
+    const getItems = R.pathOr(null, ['items']);
+    const getTitles = R.map(R.pathOr(null, ['snippet', 'title']));
+    const getVideoId = R.pathOr(null, ['id', 'videoId']);
+    const getThumbs = R.pathOr(null, ['snippet', 'thumbnails']);
 
     const getDistance = (title) => {
       q_title = sanitize(q_title);
@@ -46,7 +46,7 @@ const mergeBestMatch = R.curry((track, secondaryCallback, err, result) => {
       const d2 = levenshtein.get(`${q_artist} ${q_title}`, title);
       return d1 > d2 ? d2 : d1;
     };
-
+    console.log(getTitles(getItems(result)));
     const distances = R.map(getDistance, getTitles(getItems(result)));
 
     const addDistanceToItem = (distance, item) => {
