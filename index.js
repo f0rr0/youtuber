@@ -8,83 +8,129 @@ const youtube = google.youtube('v3');
 
 // const { api_key } = readjson.sync('./secrets/youtube-config.json');
 
-const searchYoutube = R.curry((primaryCallback, api_key, secondaryCallback, track) => {
+const youtuber = R.curry((api_key, fn, track) => {
+
   const { title, artist } = track;
+
   const params = {
+
     key: api_key,
     part: 'snippet',
     maxResults: 5,
     q: `${title} ${artist}`,
-    type: 'video',
+    type: 'video'
+
   };
-  youtube.search.list(params, primaryCallback(track, secondaryCallback));
-});
 
-const sanitize = (str) => {
-  const restricted = /[^\&\$\*\.'a-zA-Z 0-9]+/g;
-  const removeFt = /featuring|feat\.?|ft\.?/g;
-  return unidecode(str.toLowerCase()).replace(restricted, ' ').replace(removeFt, ' ').split(/\s+/).join(' ');
-};
+  const callback = R.curry((fn, err, result) => {
 
-const mergeBestMatch = R.curry((track, secondaryCallback, err, result) => {
-  if (err) {
-    secondaryCallback(err, track);
-  }
-  else if (result) {
-    let { title: q_title, artist: q_artist } = track;
+    if (err) {
+      fn(err, null);
+    } else if (result) {
+      fn(null, result);
+    }
 
-    const getItems = R.pathOr(null, ['items']);
-    const getTitles = R.map(R.pathOr(null, ['snippet', 'title']));
-    const getVideoId = R.pathOr(null, ['id', 'videoId']);
-    const getThumbs = R.pathOr(null, ['snippet', 'thumbnails']);
+  });
 
-    const getDistance = (title) => {
-      q_title = sanitize(q_title);
-      q_artist = sanitize(q_artist);
-      title = sanitize(title);
-      const d1 = levenshtein.get(`${q_title} ${q_artist}`, title);
-      const d2 = levenshtein.get(`${q_artist} ${q_title}`, title);
-      return d1 > d2 ? d2 : d1;
-    };
-    console.log(getTitles(getItems(result)));
-    const distances = R.map(getDistance, getTitles(getItems(result)));
+  const sanitize = (str) => {
 
-    const addDistanceToItem = (distance, item) => {
-      return {
-        ...item,
-        levenshtein_distance: distance
+    if (str) {
+
+      const restricted = /[^\&\$\*\.'a-zA-Z 0-9]+/g;
+      const removeFt = /featuring|feat\.?|ft\.?/g;
+      return unidecode(str.toLowerCase()).replace(restricted, ' ').replace(removeFt, ' ').split(/\s+/).join(' ');
+
+    }
+
+    else return str;
+
+  };
+
+  const leven = R.curry((fn, track, err, result) => {
+
+    if (err) {
+
+      fn(track);
+
+    }
+
+    else if (result) {
+
+      const getItems = R.pathOr([], ['items']);
+      const getVideoTitles = R.map(R.pathOr([], ['snippet', 'title']));
+
+      const getVideoId = R.pathOr(undefined, ['id', 'videoId']);
+      const getThumbs = R.pathOr(undefined, ['snippet', 'thumbnails']);
+
+      const getDistance = R.curry((track, videoTitle) => {
+
+        let { title: q_title, artist: q_artist } = track;
+
+        q_title = sanitize(q_title);
+        q_artist = sanitize(q_artist);
+        videoTitle = sanitize(videoTitle);
+        const d1 = levenshtein.get(`${q_title} ${q_artist}`, videoTitle);
+        const d2 = levenshtein.get(`${q_artist} ${q_title}`, videoTitle);
+        return d1 > d2 ? d2 : d1;
+
+      });
+
+      const distances = R.map(getDistance(track), getVideoTitles(getItems(result)));
+
+      const addDistanceToItem = (distance, item) => {
+        return {
+          ...item,
+          levenshtein_distance: distance
+        };
       };
-    };
 
-    const zippedItems = R.zipWith(addDistanceToItem, distances, getItems(result));
-    const sortedItems = R.sortBy(R.prop("levenshtein_distance"), zippedItems);
+      const zippedItems = R.zipWith(addDistanceToItem, distances, getItems(result));
 
-    const youtubedTrack = {
-      ...track,
-      youtube_images: getThumbs(R.head(sortedItems)),
-      youtube_link: `https://www.youtube.com/watch?v=${getVideoId(R.head(sortedItems))}`
-    };
+      const sortedItems = R.sortBy(R.prop("levenshtein_distance"), zippedItems);
 
-    secondaryCallback(null, youtubedTrack);
-  }
+      const youtubeLink = (sortedItems) => {
 
-  // //Before
-  // console.log("Before\n");
-  // console.log(getTitles(getItems(result)));
-  // console.log(R.map(getDistance, getTitles(getItems(result))));
-  //
-  // //After
-  // console.log("\nAfter\n");
-  // console.log(getTitles(sortedItems));
-  // console.log(R.map(getDistance, getTitles(sortedItems)));
+        if (getVideoId(R.head(sortedItems))) {
+          return `https://www.youtube.com/watch?v=${getVideoId(R.head(sortedItems))}`;
+        }
+        else return undefined;
+
+      }
+
+      const youtubedTrack = {
+
+        ...track,
+        youtube_images: getThumbs(R.head(sortedItems)),
+        youtube_link: youtubeLink(sortedItems)
+
+      };
+
+      fn(youtubedTrack);
+
+      // //Before
+      // console.log("Before\n");
+      // console.log(getTitles(getItems(result)));
+      // console.log(R.map(getDistance, getTitles(getItems(result))));
+      //
+      // //After
+      // console.log("\nAfter\n");
+      // console.log(getTitles(sortedItems));
+      // console.log(R.map(getDistance, getTitles(sortedItems)));
+
+    }
+  });
+
+  youtube.search.list(params, callback(leven(fn, track)));
+
 });
+
 
 // const track = {
 //   artist: "The Lighthouse And The Whaler",
 //   title: "Venice(Adam Snow Bootleg)"
 // }
 
-const youtuber = searchYoutube(mergeBestMatch);
+// youtuber(api_key, (track) => { console.log(track) }, track);
 
 export default youtuber;
 

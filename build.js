@@ -29,78 +29,108 @@ var youtube = _googleapis2.default.youtube('v3');
 
 // const { api_key } = readjson.sync('./secrets/youtube-config.json');
 
-var searchYoutube = _ramda2.default.curry(function (primaryCallback, api_key, secondaryCallback, track) {
+var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
   var title = track.title;
   var artist = track.artist;
 
+
   var params = {
+
     key: api_key,
     part: 'snippet',
     maxResults: 5,
     q: title + ' ' + artist,
     type: 'video'
+
   };
-  youtube.search.list(params, primaryCallback(track, secondaryCallback));
-});
 
-var sanitize = function sanitize(str) {
-  var restricted = /[^\&\$\*\.'a-zA-Z 0-9]+/g;
-  var removeFt = /featuring|feat\.?|ft\.?/g;
-  return (0, _unidecode2.default)(str.toLowerCase()).replace(restricted, ' ').replace(removeFt, ' ').split(/\s+/).join(' ');
-};
+  var callback = _ramda2.default.curry(function (fn, err, result) {
 
-var mergeBestMatch = _ramda2.default.curry(function (track, secondaryCallback, err, result) {
-  if (err) {
-    secondaryCallback(err, track);
-  } else if (result) {
-    (function () {
-      var q_title = track.title;
-      var q_artist = track.artist;
+    if (err) {
+      fn(err, null);
+    } else if (result) {
+      fn(null, result);
+    }
+  });
+
+  var sanitize = function sanitize(str) {
+
+    if (str) {
+
+      var restricted = /[^\&\$\*\.'a-zA-Z 0-9]+/g;
+      var removeFt = /featuring|feat\.?|ft\.?/g;
+      return (0, _unidecode2.default)(str.toLowerCase()).replace(restricted, ' ').replace(removeFt, ' ').split(/\s+/).join(' ');
+    } else return str;
+  };
+
+  var leven = _ramda2.default.curry(function (fn, track, err, result) {
+
+    if (err) {
+
+      fn(track);
+    } else if (result) {
+      (function () {
+
+        var getItems = _ramda2.default.pathOr([], ['items']);
+        var getVideoTitles = _ramda2.default.map(_ramda2.default.pathOr([], ['snippet', 'title']));
+
+        var getVideoId = _ramda2.default.pathOr(undefined, ['id', 'videoId']);
+        var getThumbs = _ramda2.default.pathOr(undefined, ['snippet', 'thumbnails']);
+
+        var getDistance = _ramda2.default.curry(function (track, videoTitle) {
+          var q_title = track.title;
+          var q_artist = track.artist;
 
 
-      var getItems = _ramda2.default.pathOr(null, ['items']);
-      var getTitles = _ramda2.default.map(_ramda2.default.pathOr(null, ['snippet', 'title']));
-      var getVideoId = _ramda2.default.pathOr(null, ['id', 'videoId']);
-      var getThumbs = _ramda2.default.pathOr(null, ['snippet', 'thumbnails']);
-
-      var getDistance = function getDistance(title) {
-        q_title = sanitize(q_title);
-        q_artist = sanitize(q_artist);
-        title = sanitize(title);
-        var d1 = _fastLevenshtein2.default.get(q_title + ' ' + q_artist, title);
-        var d2 = _fastLevenshtein2.default.get(q_artist + ' ' + q_title, title);
-        return d1 > d2 ? d2 : d1;
-      };
-      console.log(getTitles(getItems(result)));
-      var distances = _ramda2.default.map(getDistance, getTitles(getItems(result)));
-
-      var addDistanceToItem = function addDistanceToItem(distance, item) {
-        return _extends({}, item, {
-          levenshtein_distance: distance
+          q_title = sanitize(q_title);
+          q_artist = sanitize(q_artist);
+          videoTitle = sanitize(videoTitle);
+          var d1 = _fastLevenshtein2.default.get(q_title + ' ' + q_artist, videoTitle);
+          var d2 = _fastLevenshtein2.default.get(q_artist + ' ' + q_title, videoTitle);
+          return d1 > d2 ? d2 : d1;
         });
-      };
 
-      var zippedItems = _ramda2.default.zipWith(addDistanceToItem, distances, getItems(result));
-      var sortedItems = _ramda2.default.sortBy(_ramda2.default.prop("levenshtein_distance"), zippedItems);
+        var distances = _ramda2.default.map(getDistance(track), getVideoTitles(getItems(result)));
 
-      var youtubedTrack = _extends({}, track, {
-        youtube_images: getThumbs(_ramda2.default.head(sortedItems)),
-        youtube_link: 'https://www.youtube.com/watch?v=' + getVideoId(_ramda2.default.head(sortedItems))
-      });
+        var addDistanceToItem = function addDistanceToItem(distance, item) {
+          return _extends({}, item, {
+            levenshtein_distance: distance
+          });
+        };
 
-      secondaryCallback(null, youtubedTrack);
-    })();
-  }
+        var zippedItems = _ramda2.default.zipWith(addDistanceToItem, distances, getItems(result));
 
-  // //Before
-  // console.log("Before\n");
-  // console.log(getTitles(getItems(result)));
-  // console.log(R.map(getDistance, getTitles(getItems(result))));
-  //
-  // //After
-  // console.log("\nAfter\n");
-  // console.log(getTitles(sortedItems));
-  // console.log(R.map(getDistance, getTitles(sortedItems)));
+        var sortedItems = _ramda2.default.sortBy(_ramda2.default.prop("levenshtein_distance"), zippedItems);
+
+        var youtubeLink = function youtubeLink(sortedItems) {
+
+          if (getVideoId(_ramda2.default.head(sortedItems))) {
+            return 'https://www.youtube.com/watch?v=' + getVideoId(_ramda2.default.head(sortedItems));
+          } else return undefined;
+        };
+
+        var youtubedTrack = _extends({}, track, {
+          youtube_images: getThumbs(_ramda2.default.head(sortedItems)),
+          youtube_link: youtubeLink(sortedItems)
+
+        });
+
+        fn(youtubedTrack);
+
+        // //Before
+        // console.log("Before\n");
+        // console.log(getTitles(getItems(result)));
+        // console.log(R.map(getDistance, getTitles(getItems(result))));
+        //
+        // //After
+        // console.log("\nAfter\n");
+        // console.log(getTitles(sortedItems));
+        // console.log(R.map(getDistance, getTitles(sortedItems)));
+      })();
+    }
+  });
+
+  youtube.search.list(params, callback(leven(fn, track)));
 });
 
 // const track = {
@@ -108,7 +138,7 @@ var mergeBestMatch = _ramda2.default.curry(function (track, secondaryCallback, e
 //   title: "Venice(Adam Snow Bootleg)"
 // }
 
-var youtuber = searchYoutube(mergeBestMatch);
+// youtuber(api_key, (track) => { console.log(track) }, track);
 
 exports.default = youtuber;
 
