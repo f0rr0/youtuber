@@ -67,7 +67,7 @@ var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
 
     if (err) {
 
-      fn(track);
+      fn(err, track);
     } else if (result) {
       (function () {
 
@@ -115,7 +115,7 @@ var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
 
         });
 
-        fn(youtubedTrack);
+        fn(null, youtubedTrack);
 
         // //Before
         // console.log("Before\n");
