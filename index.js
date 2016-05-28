@@ -50,7 +50,7 @@ const youtuber = R.curry((api_key, fn, track) => {
 
     if (err) {
 
-      fn(track);
+      fn(err, track);
 
     }
 
@@ -105,7 +105,7 @@ const youtuber = R.curry((api_key, fn, track) => {
 
       };
 
-      fn(youtubedTrack);
+      fn(null, youtubedTrack);
 
       // //Before
       // console.log("Before\n");
