@@ -3,24 +3,28 @@ import google from 'googleapis';
 import levenshtein from 'fast-levenshtein';
 import unidecode from 'unidecode';
 import R from 'ramda';
+import memoize from 'async/memoize'
 
 const youtube = google.youtube('v3');
 
 // const { api_key } = readjson.sync('./secrets/youtube-config.json');
 
+const search = memoize(youtube.search.list);
+
 const youtuber = R.curry((api_key, fn, track) => {
 
-  const { title, artist } = track;
+  const getParams = R.memoize((api_key, track) => {
+    const { title, artist } = track;
+    return {
 
-  const params = {
+      key: api_key,
+      part: 'snippet',
+      maxResults: 5,
+      q: `${title} ${artist}`,
+      type: 'video'
 
-    key: api_key,
-    part: 'snippet',
-    maxResults: 5,
-    q: `${title} ${artist}`,
-    type: 'video'
-
-  };
+    };
+  });
 
   const callback = R.curry((fn, err, result) => {
 
@@ -97,12 +101,16 @@ const youtuber = R.curry((api_key, fn, track) => {
 
       }
 
-      const youtubedTrack = {
-
-        ...track,
+      const youtubeMetaData = {
         youtube_images: getThumbs(R.head(sortedItems)),
         youtube_link: youtubeLink(sortedItems)
+      }
 
+      // cache.setTrack(track, youtubeMetaData);
+
+      const youtubedTrack = {
+        ...track,
+        ...youtubeMetaData
       };
 
       fn(null, youtubedTrack);
@@ -120,7 +128,7 @@ const youtuber = R.curry((api_key, fn, track) => {
     }
   });
 
-  youtube.search.list(params, callback(leven(fn, track)));
+  search(getParams(api_key, track), callback(leven(fn, track)));
 
 });
 
@@ -130,7 +138,11 @@ const youtuber = R.curry((api_key, fn, track) => {
 //   title: "Venice(Adam Snow Bootleg)"
 // }
 
-// youtuber(api_key, (track) => { console.log(track) }, track);
+//  const callback = (err, track) => {
+//   console.log(track);
+// };
+
+// youtuber(api_key, callback, track);
 
 export default youtuber;
 
