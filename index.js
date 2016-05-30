@@ -1,4 +1,4 @@
-// import readjson from 'readjson';
+import readjson from 'readjson';
 import google from 'googleapis';
 import levenshtein from 'fast-levenshtein';
 import unidecode from 'unidecode';
@@ -7,7 +7,7 @@ import memoize from 'async/memoize'
 
 const youtube = google.youtube('v3');
 
-// const { api_key } = readjson.sync('./secrets/youtube-config.json');
+const { api_key } = readjson.sync('./secrets/youtube-config.json');
 
 const youtuber = R.curry((api_key, fn, track) => {
 
@@ -136,11 +136,14 @@ const youtuber = R.curry((api_key, fn, track) => {
 //   title: "Venice(Adam Snow Bootleg)"
 // }
 
-//  const callback = (err, track) => {
-//   console.log(track);
-// };
-
-// youtuber(api_key, callback, track);
+ const callback = (err, track) => {
+  console.log(track);
+};
+const random_track = {
+ title: "R U Mine?",
+ artist: "Arctic Monkeys"
+};
+youtuber(api_key, callback, random_track);
 
 export default youtuber;
 
