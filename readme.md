@@ -47,4 +47,4 @@ client(log, random_track);
 
 ```
 
-### Do listen to the [](https://www.youtube.com/watch?v=ngzC_8zqInk)
+### Do listen to the [https://www.youtube.com/watch?v=ngzC_8zqInk](https://www.youtube.com/watch?v=ngzC_8zqInk)
