@@ -1,4 +1,4 @@
-import readjson from 'readjson';
+//import readjson from 'readjson';
 import google from 'googleapis';
 import levenshtein from 'fast-levenshtein';
 import unidecode from 'unidecode';
@@ -7,7 +7,7 @@ import memoize from 'async/memoize'
 
 const youtube = google.youtube('v3');
 
-const { api_key } = readjson.sync('./secrets/youtube-config.json');
+//const { api_key } = readjson.sync('./secrets/youtube-config.json');
 
 const youtuber = R.curry((api_key, fn, track) => {
 
@@ -130,20 +130,14 @@ const youtuber = R.curry((api_key, fn, track) => {
 
 });
 
-
-// const track = {
-//   artist: "The Lighthouse And The Whaler",
-//   title: "Venice(Adam Snow Bootleg)"
-// }
-
- const callback = (err, track) => {
-  console.log(track);
-};
-const random_track = {
- title: "R U Mine?",
- artist: "Arctic Monkeys"
-};
-youtuber(api_key, callback, random_track);
+// const callback = (err, track) => {
+//   console.log(track);
+// };
+// const random_track = {
+//  title: "R U Mine?",
+//  artist: "Arctic Monkeys"
+// };
+// youtuber(api_key, callback, random_track);
 
 export default youtuber;
 
@@ -164,50 +158,3 @@ export default youtuber;
 //   'The Lighthouse & The Whaler - Venice (Adam Snow Remix)',
 //   'Chillwave: The Lighthouse and The Whaler - Venice (Adam Snow bootleg) [Free Download]' ]
 // [ 0, 0, 0, 10, 24 ]
-
-// sample raw result from youtube api.
-// {
-//   "kind": "youtube#searchListResponse",
-//   "etag": "\"zekp1FB4kTkkM-rWc1qIAAt-BWc/-TNFC5R_8ceecS8vSMUDJRykR4Q\"",
-//   "nextPageToken": "CAEQAA",
-//   "regionCode": "US",
-//   "pageInfo": {
-//     "totalResults": 274662,
-//     "resultsPerPage": 1
-//   },
-//   "items": [
-//     {
-//       "kind": "youtube#searchResult",
-//       "etag": "\"zekp1FB4kTkkM-rWc1qIAAt-BWc/0Sx_jv4V8njnvMcMTSH1iq-SVxA\"",
-//       "id": {
-//         "kind": "youtube#video",
-//         "videoId": "09R8_2nJtjg"
-//       },
-//       "snippet": {
-//         "publishedAt": "2015-01-14T15:00:11.000Z",
-//         "channelId": "UCN1hnUccO4FD5WfM7ithXaw",
-//         "title": "Maroon 5 - Sugar",
-//         "description": "Buy Sugar on iTunes: http://smarturl.it/M5V Catch Maroon 5 on tour all year long at www.maroon5.com Music video by Maroon 5 performing Sugar. (C) 2015 ...",
-//         "thumbnails": {
-//           "default": {
-//             "url": "https://i.ytimg.com/vi/09R8_2nJtjg/default.jpg",
-//             "width": 120,
-//             "height": 90
-//           },
-//           "medium": {
-//             "url": "https://i.ytimg.com/vi/09R8_2nJtjg/mqdefault.jpg",
-//             "width": 320,
-//             "height": 180
-//           },
-//           "high": {
-//             "url": "https://i.ytimg.com/vi/09R8_2nJtjg/hqdefault.jpg",
-//             "width": 480,
-//             "height": 360
-//           }
-//         },
-//         "channelTitle": "Maroon5VEVO",
-//         "liveBroadcastContent": "none"
-//       }
-//     }
-//   ]
-// }

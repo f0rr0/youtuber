@@ -4,11 +4,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; //import readjson from 'readjson';
 
-var _readjson = require('readjson');
-
-var _readjson2 = _interopRequireDefault(_readjson);
 
 var _googleapis = require('googleapis');
 
@@ -34,10 +31,7 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 
 var youtube = _googleapis2.default.youtube('v3');
 
-var _readjson$sync = _readjson2.default.sync('./secrets/youtube-config.json');
-
-var api_key = _readjson$sync.api_key;
-
+//const { api_key } = readjson.sync('./secrets/youtube-config.json');
 
 var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
 
@@ -148,19 +142,14 @@ var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
   youtube.search.list(getParams(api_key, track), callback(leven(fn, track)));
 });
 
-// const track = {
-//   artist: "The Lighthouse And The Whaler",
-//   title: "Venice(Adam Snow Bootleg)"
-// }
-
-var callback = function callback(err, track) {
-  console.log(track);
-};
-var random_track = {
-  title: "R U Mine?",
-  artist: "Arctic Monkeys"
-};
-youtuber(api_key, callback, random_track);
+// const callback = (err, track) => {
+//   console.log(track);
+// };
+// const random_track = {
+//  title: "R U Mine?",
+//  artist: "Arctic Monkeys"
+// };
+// youtuber(api_key, callback, random_track);
 
 exports.default = youtuber;
 
@@ -181,50 +170,3 @@ exports.default = youtuber;
 //   'The Lighthouse & The Whaler - Venice (Adam Snow Remix)',
 //   'Chillwave: The Lighthouse and The Whaler - Venice (Adam Snow bootleg) [Free Download]' ]
 // [ 0, 0, 0, 10, 24 ]
-
-// sample raw result from youtube api.
-// {
-//   "kind": "youtube#searchListResponse",
-//   "etag": "\"zekp1FB4kTkkM-rWc1qIAAt-BWc/-TNFC5R_8ceecS8vSMUDJRykR4Q\"",
-//   "nextPageToken": "CAEQAA",
-//   "regionCode": "US",
-//   "pageInfo": {
-//     "totalResults": 274662,
-//     "resultsPerPage": 1
-//   },
-//   "items": [
-//     {
-//       "kind": "youtube#searchResult",
-//       "etag": "\"zekp1FB4kTkkM-rWc1qIAAt-BWc/0Sx_jv4V8njnvMcMTSH1iq-SVxA\"",
-//       "id": {
-//         "kind": "youtube#video",
-//         "videoId": "09R8_2nJtjg"
-//       },
-//       "snippet": {
-//         "publishedAt": "2015-01-14T15:00:11.000Z",
-//         "channelId": "UCN1hnUccO4FD5WfM7ithXaw",
-//         "title": "Maroon 5 - Sugar",
-//         "description": "Buy Sugar on iTunes: http://smarturl.it/M5V Catch Maroon 5 on tour all year long at www.maroon5.com Music video by Maroon 5 performing Sugar. (C) 2015 ...",
-//         "thumbnails": {
-//           "default": {
-//             "url": "https://i.ytimg.com/vi/09R8_2nJtjg/default.jpg",
-//             "width": 120,
-//             "height": 90
-//           },
-//           "medium": {
-//             "url": "https://i.ytimg.com/vi/09R8_2nJtjg/mqdefault.jpg",
-//             "width": 320,
-//             "height": 180
-//           },
-//           "high": {
-//             "url": "https://i.ytimg.com/vi/09R8_2nJtjg/hqdefault.jpg",
-//             "width": 480,
-//             "height": 360
-//           }
-//         },
-//         "channelTitle": "Maroon5VEVO",
-//         "liveBroadcastContent": "none"
-//       }
-//     }
-//   ]
-// }
