@@ -4,8 +4,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 
-var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; }; // import readjson from 'readjson';
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
+var _readjson = require('readjson');
+
+var _readjson2 = _interopRequireDefault(_readjson);
 
 var _googleapis = require('googleapis');
 
@@ -23,25 +26,34 @@ var _ramda = require('ramda');
 
 var _ramda2 = _interopRequireDefault(_ramda);
 
+var _memoize = require('async/memoize');
+
+var _memoize2 = _interopRequireDefault(_memoize);
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var youtube = _googleapis2.default.youtube('v3');
 
-// const { api_key } = readjson.sync('./secrets/youtube-config.json');
+var _readjson$sync = _readjson2.default.sync('./secrets/youtube-config.json');
+
+var api_key = _readjson$sync.api_key;
+
 
 var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
-  var title = track.title;
-  var artist = track.artist;
 
+  var getParams = function getParams(api_key, track) {
+    var title = track.title;
+    var artist = track.artist;
 
-  var params = {
+    return {
 
-    key: api_key,
-    part: 'snippet',
-    maxResults: 5,
-    q: title + ' ' + artist,
-    type: 'video'
+      key: api_key,
+      part: 'snippet',
+      maxResults: 5,
+      q: title + ' ' + artist,
+      type: 'video'
 
+    };
   };
 
   var callback = _ramda2.default.curry(function (fn, err, result) {
@@ -109,11 +121,14 @@ var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
           } else return undefined;
         };
 
-        var youtubedTrack = _extends({}, track, {
+        var youtubeMetaData = {
           youtube_images: getThumbs(_ramda2.default.head(sortedItems)),
           youtube_link: youtubeLink(sortedItems)
+        };
 
-        });
+        // cache.setTrack(track, youtubeMetaData);
+
+        var youtubedTrack = _extends({}, track, youtubeMetaData);
 
         fn(null, youtubedTrack);
 
@@ -130,7 +145,7 @@ var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
     }
   });
 
-  youtube.search.list(params, callback(leven(fn, track)));
+  youtube.search.list(getParams(api_key, track), callback(leven(fn, track)));
 });
 
 // const track = {
@@ -138,7 +153,14 @@ var youtuber = _ramda2.default.curry(function (api_key, fn, track) {
 //   title: "Venice(Adam Snow Bootleg)"
 // }
 
-// youtuber(api_key, (track) => { console.log(track) }, track);
+var callback = function callback(err, track) {
+  console.log(track);
+};
+var random_track = {
+  title: "R U Mine?",
+  artist: "Arctic Monkeys"
+};
+youtuber(api_key, callback, random_track);
 
 exports.default = youtuber;
 
