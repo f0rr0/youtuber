@@ -3,7 +3,6 @@ import google from 'googleapis';
 import levenshtein from 'fast-levenshtein';
 import unidecode from 'unidecode';
 import R from 'ramda';
-import memoize from 'async/memoize'
 
 const youtube = google.youtube('v3');
 

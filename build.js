@@ -23,10 +23,6 @@ var _ramda = require('ramda');
 
 var _ramda2 = _interopRequireDefault(_ramda);
 
-var _memoize = require('async/memoize');
-
-var _memoize2 = _interopRequireDefault(_memoize);
-
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var youtube = _googleapis2.default.youtube('v3');
