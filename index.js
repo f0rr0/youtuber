@@ -9,11 +9,9 @@ const youtube = google.youtube('v3');
 
 // const { api_key } = readjson.sync('./secrets/youtube-config.json');
 
-const search = memoize(youtube.search.list);
-
 const youtuber = R.curry((api_key, fn, track) => {
 
-  const getParams = R.memoize((api_key, track) => {
+  const getParams = (api_key, track) => {
     const { title, artist } = track;
     return {
 
@@ -24,7 +22,7 @@ const youtuber = R.curry((api_key, fn, track) => {
       type: 'video'
 
     };
-  });
+  };
 
   const callback = R.curry((fn, err, result) => {
 
@@ -128,7 +126,7 @@ const youtuber = R.curry((api_key, fn, track) => {
     }
   });
 
-  search(getParams(api_key, track), callback(leven(fn, track)));
+  youtube.search.list(getParams(api_key, track), callback(leven(fn, track)));
 
 });
 
