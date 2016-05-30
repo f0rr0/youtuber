@@ -1,6 +1,6 @@
 {
   "name": "youtuber",
-  "version": "1.1.9",
+  "version": "2.0.0",
   "description": "Find closest matches to search query based on Levenshtein distance",
   "main": "build.js",
   "scripts": {
