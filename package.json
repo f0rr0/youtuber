@@ -14,11 +14,10 @@
   "keywords": [
     "youtube",
     "search",
-    "youtube",
+    "node"
+    "api"
     "closest",
     "match",
-    "youtube",
-    "api",
     "levenshtein"
   ],
   "author": "Siddharth Jain",
