@@ -48,3 +48,12 @@ client(log, random_track);
 ```
 
 ##### Do listen to the song [https://www.youtube.com/watch?v=ngzC_8zqInk](https://www.youtube.com/watch?v=ngzC_8zqInk)
+
+### Develop
+```
+git clone https://github.com/sidjain26/youtuber/
+cd youtuber
+npm i
+npm run build
+npm run test 
+```
