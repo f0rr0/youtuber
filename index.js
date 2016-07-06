@@ -1,4 +1,4 @@
-//import readjson from 'readjson';
+// import readjson from 'readjson';
 import google from 'googleapis';
 import levenshtein from 'fast-levenshtein';
 import unidecode from 'unidecode';
@@ -6,7 +6,7 @@ import R from 'ramda';
 
 const youtube = google.youtube('v3');
 
-//const { api_key } = readjson.sync('./secrets/youtube-config.json');
+// const { api_key } = readjson.sync('./secrets/youtube-config.json');
 
 const youtuber = R.curry((api_key, fn, track) => {
 

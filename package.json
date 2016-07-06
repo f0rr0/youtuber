@@ -14,8 +14,8 @@
   "keywords": [
     "youtube",
     "search",
-    "node"
-    "api"
+    "node",
+    "api",
     "closest",
     "match",
     "levenshtein"
