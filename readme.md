@@ -1,4 +1,7 @@
 ## YouTuber
+
+[![Greenkeeper badge](https://badges.greenkeeper.io/f0rr0/youtuber.svg)](https://greenkeeper.io/)
+
 Search Youtube for songs based on title and artist. Get the best match based on Levenshtein distances.
 
 ### Usage
